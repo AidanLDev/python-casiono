@@ -16,17 +16,30 @@ symbol_count = {
   "D": 8
 }
 
-# The multipliers for winning on different symbols
+# The multipliers for winning on different symbols (the more rare the letter, the higher teh multiplier)
 symbol_value = {
-  "A": 2,
+  "A": 5,
   "B": 4,
-  "C": 6,
-  "D": 8
+  "C": 3,
+  "D": 2
 }
 
-def check_winnings(columns, lines, bet):
+def check_winnings(columns, lines, bet, values):
+  winnings = 0
+  winning_lines = []
+  # check rows they bet on
+  for line in range(lines):
+    # check if all symbols are the same
+    symbol = columns[0][line] # Check first column for whatever line we're on
+    for column in columns:
+      symbol_to_check = column[line]
+      if symbol != symbol_to_check:
+        break
+    else: #no break in the forLoop so execute this
+      winnings += values[symbol] * bet
+      winning_lines.append(line + 1)
+  return winnings, winning_lines
 
-  
 def get_slot_machine_spin(rows, cols, symbols):
   all_symbols = []
   for symbol, symbol_count in symbols.items(): # Loop through each symbol in our symbol_count dictionary
@@ -95,8 +108,7 @@ def get_bet():
     else: print("Please enter a number")
   return bet
 
-def main():
-  balance = deposit()
+def spin(balance):
   lines = get_number_of_lines()
   while True:
     bet = get_bet()
@@ -107,9 +119,25 @@ def main():
     else:
       break
     
+  print(f"You are betting £{bet} on £{lines}, total bet is £{total_bet}. Your current balance is £{balance}")
+    
   slots = get_slot_machine_spin(ROWS, COLS, symbol_count)
   print_slot_machine(slots)
-  
-  
-  print(f"You are betting £{bet} on £{lines}, total bet is £{total_bet}. Your current balance is £{balance}")
+
+  winnings, winning_lines = check_winnings(slots, lines, bet, symbol_value)
+  print(f"You won {winnings}.")
+  print(f"You won on lines: ", *winning_lines)
+  return winnings - total_bet
+
+def main():
+  balance = deposit()
+  while True:
+    print(f"Current balance is £{balance}")
+    answer = input("Press enter to play (q to quit).")
+    if answer.lower() == "q":
+      break
+    balance += spin(balance)
+    
+  print(f"You left with £{balance}")
+
 main()
